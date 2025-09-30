@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import de.featjar.Common;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.input.FileInputMapper;
-import de.featjar.base.io.output.FileOutputMapper;
 import de.featjar.base.io.output.StreamOutputMapper;
 import de.featjar.formula.assignment.BooleanAssignmentList;
 import java.io.*;
@@ -37,22 +36,20 @@ import org.junit.jupiter.api.Test;
 
 public class BooleanAssignmentListCSVFormatTest extends Common {
 
-    private final String general_path = "src\\test\\resources\\csvTestData\\";
-
-    private final String[] csvFiles =
-            new String[] {"minimal_csv.csv", "wrong_format.csv", "no_blank.csv", "empty_csv.csv"};
-
     private final Charset charset = StandardCharsets.UTF_8;
 
-    private String fetchCSVFile(int csvIndex) {
-        return general_path + csvFiles[csvIndex];
+    /*
+    adds the normal file path, as well as a ".csv" file extension.
+     */
+    private String extendFilePath(String fileName) {
+        return "src\\test\\resources\\csvTestData\\" + fileName + ".csv";
     }
 
     /*
-    Reads input CSV file and returns it as byte array
+    Reads input CSV file and returns it as byte array. Does not use FeatJAR methods.
      */
-    public byte[] byteStreamReader(int csvIndex) {
-        File file = new File(fetchCSVFile(csvIndex));
+    private byte[] getInputStream(String inputFilePath) {
+        File file = new File(inputFilePath);
 
         byte[] byteArray = null;
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -67,108 +64,76 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         return byteArray;
     }
 
-    public void writeOutputFile(BooleanAssignmentListCSVFormat csvObject, Result<BooleanAssignmentList> parseResult) {
-        FileOutputMapper fileOutputMapper = null;
-        try {
-            fileOutputMapper = new FileOutputMapper(
-                    Path.of(
-                            "D:\\Indigo\\TUBS\\ISF Teamprojekt\\git\\FeatJAR\\formula\\src\\test\\java\\de\\featjar\\formula\\io\\csv\\testcsv-OUTPUT.csv"),
-                    charset);
-        } catch (java.io.IOException e) {
-            System.out.println("Caught");
-        }
-
-        if (fileOutputMapper == null) {
-            System.out.println("Failed to intitialize FileOutputMapper");
-            return;
-        }
-
-        try {
-            csvObject.write(parseResult.get(), fileOutputMapper);
-        } catch (java.io.IOException e) {
-            System.out.println("Failed to write parseResult to fileOutputMapper");
-        }
-
-        try {
-            fileOutputMapper.close();
-        } catch (java.io.IOException e) {
-            System.out.println("Failed to close fileOutputMapper");
-        }
-    }
-
-    @Test
-    void actualTest() {
-
-        for (int csvIndex = 0; csvIndex < this.csvFiles.length; csvIndex++) {
-            someTest(csvIndex);
-            System.out.println("Test Complete " + csvIndex);
-        }
-    }
-
-    void getInputStream(int csvIndex) {
+    /*
+    Uses FeatJAR's FileInputMapper to read an input CSV file and returns it as byte array
+     */
+    private byte[] getOutputStream(String inputFilePath) {
         BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
-
-        // start parsing input CSV
-        byte[] byteInput = byteStreamReader(csvIndex);
-
-        if (csvIndex == 3) {
-            assertEquals(0, byteInput.length);
-        }
 
         FileInputMapper fileInputMapper = null;
         try {
-            fileInputMapper = new FileInputMapper(Path.of(fetchCSVFile(csvIndex)), charset);
+            fileInputMapper = new FileInputMapper(Path.of(inputFilePath), charset);
 
         } catch (java.io.IOException e) {
-            System.out.println("Caught");
+            System.out.println("Failed to create FileInputMapper.");
         }
-
-        Result<BooleanAssignmentList> parseResult = csvObject.parse(fileInputMapper);
-    }
-
-    void someTest(int csvIndex) {
-
-        BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
-
-        // start parsing input CSV
-        byte[] byteInput = byteStreamReader(csvIndex);
-
-        if (csvIndex == 3) {
-            assertEquals(0, byteInput.length);
-        }
-
-        FileInputMapper fileInputMapper = null;
-        try {
-            fileInputMapper = new FileInputMapper(Path.of(fetchCSVFile(csvIndex)), charset);
-
-        } catch (java.io.IOException e) {
-            System.out.println("Caught");
-        }
-
         Result<BooleanAssignmentList> parseResult = csvObject.parse(fileInputMapper);
 
-        // hand over parse result to output mapper
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // set up streamOutputMapper
+        ByteArrayOutputStream bAOS = new ByteArrayOutputStream();
+        StreamOutputMapper streamOutputMapper = new StreamOutputMapper(bAOS, charset);
 
-        StreamOutputMapper streamOutputMapper = new StreamOutputMapper(baos, charset);
-
-        // write inputs to outputmapper
+        // write inputs to streamOutputMapper
         try {
             csvObject.write(parseResult.get(), streamOutputMapper);
         } catch (java.io.IOException e) {
-            System.out.println("Failed to write parseresult to streamoutputmapper");
+            System.out.println("Failed to write parseResult to streamOutputMapper");
         }
 
-        byte[] byteOutput = baos.toByteArray(); // convert output stream to byte array
+        return bAOS.toByteArray(); // convert output stream to byte array
+    }
 
-        // Test if output stream equals input stream
+    @Test
+    void testMinimalFile() {
+        String file = extendFilePath("minimal");
 
-        if (csvIndex == 0) {
-            assertArrayEquals(byteInput, byteOutput);
-        } else {
-            assertFalse(Arrays.equals(byteInput, byteOutput));
+        byte[] inputStream = getInputStream(file);
+        byte[] outputStream = getOutputStream(file);
+
+        assertArrayEquals(inputStream, outputStream);
+    }
+
+    @Test
+    void testWrongFormat() {
+        String file = extendFilePath("wrong_format");
+
+        byte[] inputStream = getInputStream(file);
+        byte[] outputStream = getOutputStream(file);
+
+        assertFalse(Arrays.equals(inputStream, outputStream));
+    }
+
+    @Test
+    void testMissingBlankLine() {
+        String file = extendFilePath("no_blank");
+
+        byte[] inputStream = getInputStream(file);
+        byte[] outputStream = getOutputStream(file);
+
+        assertFalse(Arrays.equals(inputStream, outputStream));
+    }
+
+    @Test
+    void testEmptyFile() {
+        String file = extendFilePath("empty");
+
+        boolean noElementThrown = false;
+        try {
+            getOutputStream(file);
+        } catch (java.util.NoSuchElementException e) {
+            noElementThrown = true;
         }
-        
 
+        assertTrue(noElementThrown);
     }
 }
