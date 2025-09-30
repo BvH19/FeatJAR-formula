@@ -1,38 +1,48 @@
+/*
+ * Copyright (C) 2025 FeatJAR-Development-Team
+ *
+ * This file is part of FeatJAR-formula.
+ *
+ * formula is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3.0 of the License,
+ * or (at your option) any later version.
+ *
+ * formula is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with formula. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * See <https://github.com/FeatureIDE/FeatJAR-formula> for further information.
+ */
 package de.featjar.formula.io.csv;
 
-import java.io.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import de.featjar.Common;
 import de.featjar.base.data.Result;
+import de.featjar.base.io.input.FileInputMapper;
 import de.featjar.base.io.output.FileOutputMapper;
 import de.featjar.base.io.output.StreamOutputMapper;
 import de.featjar.formula.assignment.BooleanAssignmentList;
-import org.junit.jupiter.api.Test;
-import de.featjar.base.io.input.FileInputMapper;
-import org.mockito.internal.matchers.ArrayEquals;
-
-import java.lang.reflect.Array;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+import org.junit.jupiter.api.Test;
 
 public class BooleanAssignmentListCSVFormatTest extends Common {
 
+    private final String general_path = "src\\test\\resources\\csvTestData\\";
 
-    final private String general_path = "src\\test\\resources\\csvTestData\\";
+    private final String[] csvFiles =
+            new String[] {"minimal_csv.csv", "wrong_format.csv", "no_blank.csv", "empty_csv.csv"};
 
-    final private String[] csvFiles = new String[] {
-            "minimal_csv.csv",
-            "wrong_format.csv",
-            "no_blank.csv",
-            "empty_csv.csv"
-    };
-
-    final private Charset charset = StandardCharsets.UTF_8;
+    private final Charset charset = StandardCharsets.UTF_8;
 
     private String fetchCSVFile(int csvIndex) {
         return general_path + csvFiles[csvIndex];
@@ -61,9 +71,9 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         FileOutputMapper fileOutputMapper = null;
         try {
             fileOutputMapper = new FileOutputMapper(
-                    Path.of("D:\\Indigo\\TUBS\\ISF Teamprojekt\\git\\FeatJAR\\formula\\src\\test\\java\\de\\featjar\\formula\\io\\csv\\testcsv-OUTPUT.csv"),
-                    charset
-            );
+                    Path.of(
+                            "D:\\Indigo\\TUBS\\ISF Teamprojekt\\git\\FeatJAR\\formula\\src\\test\\java\\de\\featjar\\formula\\io\\csv\\testcsv-OUTPUT.csv"),
+                    charset);
         } catch (java.io.IOException e) {
             System.out.println("Caught");
         }
@@ -89,7 +99,6 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
     @Test
     void actualTest() {
 
-
         for (int csvIndex = 0; csvIndex < this.csvFiles.length; csvIndex++) {
             someTest(csvIndex);
             System.out.println("Test Complete " + csvIndex);
@@ -108,10 +117,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
         FileInputMapper fileInputMapper = null;
         try {
-            fileInputMapper = new FileInputMapper(
-                    Path.of(fetchCSVFile(csvIndex)),
-                    charset
-            );
+            fileInputMapper = new FileInputMapper(Path.of(fetchCSVFile(csvIndex)), charset);
 
         } catch (java.io.IOException e) {
             System.out.println("Caught");
@@ -133,10 +139,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
         FileInputMapper fileInputMapper = null;
         try {
-            fileInputMapper = new FileInputMapper(
-                    Path.of(fetchCSVFile(csvIndex)),
-                    charset
-            );
+            fileInputMapper = new FileInputMapper(Path.of(fetchCSVFile(csvIndex)), charset);
 
         } catch (java.io.IOException e) {
             System.out.println("Caught");
@@ -147,10 +150,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         // hand over parse result to output mapper
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        StreamOutputMapper streamOutputMapper = new StreamOutputMapper(
-                baos,
-                charset
-        );
+        StreamOutputMapper streamOutputMapper = new StreamOutputMapper(baos, charset);
 
         // write inputs to outputmapper
         try {
@@ -161,8 +161,6 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
         byte[] byteOutput = baos.toByteArray(); // convert output stream to byte array
 
-
-
         // Test if output stream equals input stream
 
         if (csvIndex == 0) {
@@ -170,7 +168,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         } else {
             assertFalse(Arrays.equals(byteInput, byteOutput));
         }
-
+        // u
 
     }
 }
