@@ -168,7 +168,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         } else {
             assertFalse(Arrays.equals(byteInput, byteOutput));
         }
-        // u
+        
 
     }
 }
