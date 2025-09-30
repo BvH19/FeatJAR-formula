@@ -9,29 +9,45 @@ import de.featjar.base.io.output.StreamOutputMapper;
 import de.featjar.formula.assignment.BooleanAssignmentList;
 import org.junit.jupiter.api.Test;
 import de.featjar.base.io.input.FileInputMapper;
+import org.mockito.internal.matchers.ArrayEquals;
 
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class BooleanAssignmentListCSVFormatTest extends Common {
 
-    final private String minimal_CSV_path = "src\\test\\resources\\csvTestData\\minimal_csv.csv";
+
+    final private String general_path = "src\\test\\resources\\csvTestData\\";
+
+    final private String[] csvFiles = new String[] {
+            "minimal_csv.csv",
+            "wrong_format.csv",
+            "no_blank.csv",
+            "empty_csv.csv"
+    };
+
     final private Charset charset = StandardCharsets.UTF_8;
+
+    private String fetchCSVFile(int csvIndex) {
+        return general_path + csvFiles[csvIndex];
+    }
 
     /*
     Reads input CSV file and returns it as byte array
      */
-    public byte[] byteStreamReader() {
-        File file = new File(this.minimal_CSV_path);
+    public byte[] byteStreamReader(int csvIndex) {
+        File file = new File(fetchCSVFile(csvIndex));
 
         byte[] byteArray = null;
         try (FileInputStream fis = new FileInputStream(file)) {
             byteArray = new byte[(int) file.length()];
-            if (fis.read(byteArray) <= 0) {
+            if (fis.read(byteArray) < 0) {
                 throw new IOException("Incorrect file length");
             }
         } catch (IOException e) {
@@ -71,15 +87,54 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
     }
 
     @Test
-    void someTest() {
+    void actualTest() {
+
+
+        for (int csvIndex = 0; csvIndex < this.csvFiles.length; csvIndex++) {
+            someTest(csvIndex);
+            System.out.println("Test Complete " + csvIndex);
+        }
+    }
+
+    void getInputStream(int csvIndex) {
         BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
 
         // start parsing input CSV
-        byte[] byteInput = byteStreamReader();
+        byte[] byteInput = byteStreamReader(csvIndex);
+
+        if (csvIndex == 3) {
+            assertEquals(0, byteInput.length);
+        }
+
         FileInputMapper fileInputMapper = null;
         try {
             fileInputMapper = new FileInputMapper(
-                    Path.of(this.minimal_CSV_path),
+                    Path.of(fetchCSVFile(csvIndex)),
+                    charset
+            );
+
+        } catch (java.io.IOException e) {
+            System.out.println("Caught");
+        }
+
+        Result<BooleanAssignmentList> parseResult = csvObject.parse(fileInputMapper);
+    }
+
+    void someTest(int csvIndex) {
+
+        BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
+
+        // start parsing input CSV
+        byte[] byteInput = byteStreamReader(csvIndex);
+
+        if (csvIndex == 3) {
+            assertEquals(0, byteInput.length);
+        }
+
+        FileInputMapper fileInputMapper = null;
+        try {
+            fileInputMapper = new FileInputMapper(
+                    Path.of(fetchCSVFile(csvIndex)),
                     charset
             );
 
@@ -106,9 +161,15 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
         byte[] byteOutput = baos.toByteArray(); // convert output stream to byte array
 
+
+
         // Test if output stream equals input stream
 
-        assertArrayEquals(byteInput, byteOutput);
+        if (csvIndex == 0) {
+            assertArrayEquals(byteInput, byteOutput);
+        } else {
+            assertFalse(Arrays.equals(byteInput, byteOutput));
+        }
 
 
     }
