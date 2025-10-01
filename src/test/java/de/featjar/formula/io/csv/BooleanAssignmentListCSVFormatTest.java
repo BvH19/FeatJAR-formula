@@ -39,7 +39,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
     private final Charset charset = StandardCharsets.UTF_8;
 
     /**
-     * adds the normal file path, as well as a ".csv" file extension.
+     * adds the normal file path for test data, as well as a ".csv" file extension.
      * @param fileName: just the bare file name, no extension or folder path
      */
     private String extendFilePath(String fileName) {
@@ -49,7 +49,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
     /**
      * Reads input CSV file and returns it as byte array. Does not use FeatJAR methods.
      * @param inputFilePath: Full path to the file that should be read from.
-     * @return byte stream of that file
+     * @return byte array of that file
      */
     private byte[] getInputStream(String inputFilePath) {
         File file = new File(inputFilePath);
@@ -70,11 +70,12 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
     /**
      * Uses FeatJAR's FileInputMapper to read an input CSV file and returns it as byte array
      * @param inputFilePath: full path to the file that should be first read then written to a byte stream
-     * @return byte stream of that file
+     * @return byte array of that file
      */
     private byte[] getOutputStream(String inputFilePath) {
         BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
 
+        // parse input file
         FileInputMapper fileInputMapper = null;
         try {
             fileInputMapper = new FileInputMapper(Path.of(inputFilePath), charset);
@@ -88,14 +89,14 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         ByteArrayOutputStream bAOS = new ByteArrayOutputStream();
         StreamOutputMapper streamOutputMapper = new StreamOutputMapper(bAOS, charset);
 
-        // write inputs to streamOutputMapper
+        // write parsed inputs to streamOutputMapper
         try {
             csvObject.write(parseResult.get(), streamOutputMapper);
         } catch (java.io.IOException e) {
             System.out.println("Failed to write parseResult to streamOutputMapper");
         }
 
-        return bAOS.toByteArray(); // convert output stream to byte array
+        return bAOS.toByteArray();
     }
 
     /**
