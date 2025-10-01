@@ -38,15 +38,18 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
     private final Charset charset = StandardCharsets.UTF_8;
 
-    /*
-    adds the normal file path, as well as a ".csv" file extension.
+    /**
+     * adds the normal file path, as well as a ".csv" file extension.
+     * @param fileName: just the bare file name, no extension or folder path
      */
     private String extendFilePath(String fileName) {
         return "src\\test\\resources\\csvTestData\\" + fileName + ".csv";
     }
 
-    /*
-    Reads input CSV file and returns it as byte array. Does not use FeatJAR methods.
+    /**
+     * Reads input CSV file and returns it as byte array. Does not use FeatJAR methods.
+     * @param inputFilePath: Full path to the file that should be read from.
+     * @return byte stream of that file
      */
     private byte[] getInputStream(String inputFilePath) {
         File file = new File(inputFilePath);
@@ -64,8 +67,10 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         return byteArray;
     }
 
-    /*
-    Uses FeatJAR's FileInputMapper to read an input CSV file and returns it as byte array
+    /**
+     * Uses FeatJAR's FileInputMapper to read an input CSV file and returns it as byte array
+     * @param inputFilePath: full path to the file that should be first read then written to a bytestream
+     * @return byte stream of that file
      */
     private byte[] getOutputStream(String inputFilePath) {
         BooleanAssignmentListCSVFormat csvObject = new BooleanAssignmentListCSVFormat();
@@ -93,6 +98,9 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         return bAOS.toByteArray(); // convert output stream to byte array
     }
 
+    /**
+     * Tests if BooleanAssignmentListCSVFormat can handle a small csv
+     */
     @Test
     void testMinimalFile() {
         String file = extendFilePath("minimal");
@@ -103,6 +111,10 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         assertArrayEquals(inputStream, outputStream);
     }
 
+    /**
+     * Tests if BooleanAssignmentListCSVFormat rejects a csv in the wrong format
+     * Should not accept 'Windows (CR LF)'.
+     */
     @Test
     void testWrongFormat() {
         String file = extendFilePath("wrong_format");
@@ -113,6 +125,10 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         assertFalse(Arrays.equals(inputStream, outputStream));
     }
 
+    /**
+     * Tests if BooleanAssignmentListCSVFormat writes a csv file with
+     * a blank line at the end, even if the input file was missing it.
+     */
     @Test
     void testMissingBlankLine() {
         String file = extendFilePath("no_blank");
@@ -123,6 +139,10 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
         assertFalse(Arrays.equals(inputStream, outputStream));
     }
 
+    /**
+     * Tests if BooleanAssignmentListCSVFormat rejects empty input
+     * files and throws NoSuchElementException as a result.
+     */
     @Test
     void testEmptyFile() {
         String file = extendFilePath("empty");
