@@ -69,7 +69,7 @@ public class BooleanAssignmentListCSVFormatTest extends Common {
 
     /**
      * Uses FeatJAR's FileInputMapper to read an input CSV file and returns it as byte array
-     * @param inputFilePath: full path to the file that should be first read then written to a bytestream
+     * @param inputFilePath: full path to the file that should be first read then written to a byte stream
      * @return byte stream of that file
      */
     private byte[] getOutputStream(String inputFilePath) {
