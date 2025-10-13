@@ -25,21 +25,42 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
+import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentList;
+import java.util.HashMap;
 import java.util.List;
 
-public class ComputeNumberConfigurations extends AComputation<Integer> {
+public class ComputeDistributionFeatureSelections extends AComputation<HashMap<String, Integer>> {
 
     protected static final Dependency<BooleanAssignmentList> BOOLEAN_ASSIGMENT_LIST =
             Dependency.newDependency(BooleanAssignmentList.class);
 
-    public ComputeNumberConfigurations(IComputation<BooleanAssignmentList> booleanAssigmentList) {
+    public ComputeDistributionFeatureSelections(IComputation<BooleanAssignmentList> booleanAssigmentList) {
         super(booleanAssigmentList);
     }
 
     @Override
-    public Result<Integer> compute(List<Object> dependencyList, Progress progress) {
+    public Result<HashMap<String, Integer>> compute(List<Object> dependencyList, Progress progress) {
         BooleanAssignmentList booleanAssigmenAssignmentList = BOOLEAN_ASSIGMENT_LIST.get(dependencyList);
-        return Result.of(booleanAssigmenAssignmentList.getAll().size());
+        HashMap<String, Integer> selectionDistribution = new HashMap<String, Integer>();
+        selectionDistribution.put("selected", 0);
+        selectionDistribution.put("deselected", 0);
+        selectionDistribution.put("undefined", 0);
+
+        for (BooleanAssignment assignment : booleanAssigmenAssignmentList.getAll()) {
+            selectionDistribution.replace(
+                    "deselected", assignment.countNegatives() + selectionDistribution.get("deselected"));
+            selectionDistribution.replace(
+                    "selected", assignment.countPositives() + selectionDistribution.get("selected"));
+            selectionDistribution.replace(
+                    "undefined",
+                    -assignment.countNonZero()
+                            + booleanAssigmenAssignmentList
+                                    .getVariableMap()
+                                    .getVariableNames()
+                                    .size()
+                            + selectionDistribution.get("undefined"));
+        }
+        return Result.of(selectionDistribution);
     }
 }
